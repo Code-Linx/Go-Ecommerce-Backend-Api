@@ -3,6 +3,8 @@ package user
 import (
 	"net/http"
 
+	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/types"
+	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -19,5 +21,17 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 
 }
 
-func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request)    {}
-func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {}
+
+
+func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
+
+	//get Json Payload
+	var payload types.RegisterUserPayload
+
+	if err := utils.ParseJson(r, payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+	}
+
+	//check if user exist
+}
