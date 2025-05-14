@@ -54,9 +54,11 @@ func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 }
 
 func (s *Store) GetUserByID(id int) (*types.User, error) {
-
+	// Temporary stub
+	return nil, nil
 }
 
 func (s *Store) CreateUser(user types.User) error {
-
+	// Temporary stub
+	return nil
 }

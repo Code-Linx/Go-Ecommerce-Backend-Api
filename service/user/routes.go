@@ -33,7 +33,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	//get Json Payload
 	var payload types.RegisterUserPayload
 
-	if err := utils.ParseJson(r, payload); err != nil {
+	if err := utils.ParseJson(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 	}
 
