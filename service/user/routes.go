@@ -7,6 +7,7 @@ import (
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/service/auth"
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/types"
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -35,6 +36,14 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	if err := utils.ParseJson(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	//validate the payload
+	if err := utils.Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
+		return
 	}
 
 	//check if user exist
