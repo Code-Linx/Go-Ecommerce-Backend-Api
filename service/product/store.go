@@ -2,6 +2,8 @@ package product
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/types"
 )
@@ -12,6 +14,52 @@ type Store struct {
 
 func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
+}
+
+func (s *Store) GetProductByID(productID int) (*types.Product, error) {
+	rows, err := s.db.Query("SELECT * FROM products WHERE id = ?", productID)
+	if err != nil {
+		return nil, err
+	}
+
+	p := new(types.Product)
+	for rows.Next() {
+		p, err = scanRowsIntoProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return p, nil
+}
+
+func (s *Store) GetProductsByID(productIDs []int) ([]types.Product, error) {
+	placeholders := strings.Repeat(",?", len(productIDs)-1)
+	query := fmt.Sprintf("SELECT * FROM products WHERE id IN (?%s)", placeholders)
+
+	// Convert productIDs to []interface{}
+	args := make([]interface{}, len(productIDs))
+	for i, v := range productIDs {
+		args[i] = v
+	}
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	products := []types.Product{}
+	for rows.Next() {
+		p, err := scanRowsIntoProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, *p)
+	}
+
+	return products, nil
+
 }
 
 func (s *Store) GetProducts() ([]*types.Product, error) {
