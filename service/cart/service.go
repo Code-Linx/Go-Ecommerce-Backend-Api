@@ -30,7 +30,15 @@ func (h *Handler) createOrder(products []types.Product, cartItems []types.CartCh
 		return 0, 0, nil
 	}
 	//calculate total price
+	totalPrice := calculateTotalPrice(cartItems, productMap)
+
 	//reduce quantity of products in database
+	// reduce the quantity of products in the store
+	for _, item := range cartItems {
+		product := productMap[item.ProductID]
+		product.Quantity -= item.Quantity
+		h.productStore.UpdateProduct(product)
+	}
 	//create order
 	//create the order items
 	return 0, 0, nil
