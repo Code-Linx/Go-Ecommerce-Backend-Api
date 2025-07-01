@@ -36,11 +36,17 @@ func (h *Handler) handleCheckOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//get product
-	/* productIDs, err := getCartItemsIDs(cart.Items)
+	productIds, err := getCartItemsIDs(cart.Items)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
-	} */
+	}
+
+	//get product
+	products, err := h.productStore.GetProductsByID(productIds)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
 
 }
