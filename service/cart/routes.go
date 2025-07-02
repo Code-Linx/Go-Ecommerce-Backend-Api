@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/service/auth"
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/types"
 	"github.com/Code-Linx/Go-Ecommerce-Backend-Api/utils"
 	"github.com/go-playground/validator"
@@ -13,19 +14,21 @@ import (
 type Handler struct {
 	store        types.OrderStore
 	productStore types.ProductStore
+	userStore    types.UserStore
 }
 
-func NewHandler(store types.OrderStore, productStore types.ProductStore) *Handler {
-	return &Handler{store: store, productStore: productStore}
+func NewHandler(store types.OrderStore, productStore types.ProductStore, userStore types.UserStore) *Handler {
+	return &Handler{store: store, productStore: productStore, userStore: userStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/cart/checkout", h.handleCheckOut).Methods(http.MethodPost)
+	router.HandleFunc("/cart/checkout", auth.WithJWT(h.handleCheckOut, h.userStore)).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleCheckOut(w http.ResponseWriter, r *http.Request) {
+	userID := auth.GetUserIDFromContext(r.Context())
 	var cart types.CartCheckoutPayload
-	if err := utils.ParseJson(r, cart); err != nil {
+	if err := utils.ParseJson(r, &cart); err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, err)
 		return
 	}
@@ -48,5 +51,14 @@ func (h *Handler) handleCheckOut(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+	orderID, totalPrice, err := h.createOrder(products, cart.Items, userID)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
+	utils.WriteJson(w, http.StatusOK, map[string]interface{}{
+		"total_price": totalPrice,
+		"order_id":    orderID,
+	})
 }
